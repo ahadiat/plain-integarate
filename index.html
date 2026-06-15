@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayaran Dinner FEPDT</title>
+</head>
+
+<body>
+
+<div id="main-content">
+
+    <div id="form-wrapper">
+
+        <h2>Bayaran Dinner FEPDT</h2>
+
+        <p>
+            Makan Malam FEPDT: Anugerah Dekan FEPDT & Pelancaran Hari AI Sedunia
+        </p>
+
+        <p>
+            Sumai Hotel, Kuala Terengganu
+        </p>
+
+        <p>
+            Tema: Fantasy
+        </p>
+
+        <p>
+            Fee: RM70
+        </p>
+
+        <hr>
+
+        <label>Scan Sini Untuk Bayaran</label>
+        <br><br>
+
+        <img
+            src="https://pbs.twimg.com/media/HKHtge1aQAArYiK?format=jpg&name=medium"
+            alt="QR Code"
+            width="300"
+        >
+
+        <br><br>
+
+        <label>Nama</label>
+        <br>
+        <input
+            type="text"
+            id="nama"
+            placeholder="Masukkan nama penuh"
+        >
+
+        <br><br>
+
+        <label>Kategori</label>
+        <br>
+
+        <select id="kategori">
+            <option value="">-- Pilih Kategori --</option>
+            <option value="Student">Student</option>
+            <option value="Lecturer">Lecturer</option>
+            <option value="Staff">Staff</option>
+            <option value="Others">Others</option>
+        </select>
+
+        <br><br>
+
+        <label>No Matrik (Optional)</label>
+        <br>
+
+        <input
+            type="text"
+            id="matrik"
+            placeholder="Contoh: A22EC1234"
+        >
+
+        <br><br>
+
+        <label>Upload Resit</label>
+        <br>
+
+        <input
+            type="file"
+            id="file"
+            accept="image/*,.pdf"
+        >
+
+        <br><br>
+
+        <button onclick="submitData()">
+            Hantar Bayaran
+        </button>
+
+        <div id="status"></div>
+
+    </div>
+
+</div>
+
+<script>
+const WHATSAPP_LINK = "https://wa.me/60123456789?text=Saya%20ingin%20bertanya%20mengenai%20status%20bayaran%20Dinner%20FEPDT";
+
+const WEBAPP = "https://script.google.com/macros/s/AKfycbzUbMDYivN-DdrNRmXaSi7fUgWV99yo6pyW3AEzmXA0hTFAGEHcgRjuVKxAOT6PCACjhQ/exec";
+
+function showSuccessPage() {
+
+    const container = document.getElementById("main-content");
+
+    container.innerHTML = `
+        <h2>Bayaran Berjaya Dihantar!</h2>
+
+        <p>
+            Terima kasih atas pengesahan anda.
+            Resit dan maklumat pendaftaran anda
+            telah berjaya disimpan ke dalam sistem kami.
+        </p>
+
+        <p>
+            Jumpa anda di Makan Malam FEPDT.
+        </p>
+
+        <a href="${WHATSAPP_LINK}" target="_blank">
+            Hubungi Setiausaha (WhatsApp)
+        </a>
+    `;
+}
+
+function submitData(){
+
+    const nama = document.getElementById("nama").value.trim();
+    const kategori = document.getElementById("kategori").value;
+    const matrik = document.getElementById("matrik").value.trim();
+    const file = document.getElementById("file").files[0];
+
+    if(!nama){
+        alert("Sila masukkan nama");
+        return;
+    }
+
+    if(!kategori){
+        alert("Sila pilih kategori");
+        return;
+    }
+
+    if(!file){
+        alert("Sila upload resit");
+        return;
+    }
+
+    document.getElementById("status").innerHTML =
+        "⏳ Sedang memuat naik...";
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        const base64 =
+            e.target.result.split(",")[1];
+
+        fetch(WEBAPP,{
+            method:"POST",
+            body:JSON.stringify({
+                nama:nama,
+                kategori:kategori,
+                matrik:matrik,
+                fileData:base64,
+                fileName:file.name,
+                mimeType:file.type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if(data.success){
+
+                showSuccessPage();
+
+            }else{
+
+                document.getElementById("status").innerHTML =
+                    "❌ " +
+                    (data.error || "Ralat tidak diketahui");
+            }
+
+        })
+        .catch(error => {
+
+            document.getElementById("status").innerHTML =
+                "❌ Ralat: " + error;
+
+            console.error(error);
+
+        });
+
+    };
+
+    reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html>
